@@ -1,11 +1,14 @@
 package checkinop
 
-import "github.com/brokiem/auto-hoyolab-checkin/app/configcheckin"
+import (
+	"github.com/WeeraW/auto-hoyolab-checkin/app/configcheckin"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/cookiereader"
+)
 
-func CheckinHonkaiStarRail() (message string, err error) {
+func CheckinHonkaiStarRail(cookie cookiereader.CheckInCookie) (message string, err error) {
 	if !configcheckin.ConfigData.HonkaiStarRail.Enable {
 		return "", nil
 	}
 
-	return DoCheckIn(configcheckin.ConfigData.HonkaiStarRail)
+	return DoCheckIn(cookie, configcheckin.ConfigData.HonkaiStarRail)
 }

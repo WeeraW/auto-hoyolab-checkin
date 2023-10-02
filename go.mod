@@ -1,17 +1,18 @@
-module github.com/brokiem/auto-hoyolab-checkin
+module github.com/WeeraW/auto-hoyolab-checkin
 
 go 1.18
 
 require (
+	github.com/gen2brain/beeep v0.0.0-20230907135156-1a38885a97fc
 	github.com/getlantern/systray v1.2.1
 	github.com/go-co-op/gocron v1.17.0
 	github.com/gonutz/w32/v2 v2.5.0
+	github.com/kardianos/service v1.2.2
 	github.com/zellyn/kooky v0.0.0-20230814063115-d4b42194bf0b
 )
 
 require (
 	github.com/bobesa/go-domain-util v0.0.0-20190911083921-4033b5f7dd89 // indirect
-	github.com/gen2brain/beeep v0.0.0-20230907135156-1a38885a97fc // indirect
 	github.com/getlantern/context v0.0.0-20190109183933-c447772a6520 // indirect
 	github.com/getlantern/errors v0.0.0-20190325191628-abdb3e3e36f7 // indirect
 	github.com/getlantern/golog v0.0.0-20190830074920-4ef2e798c2d7 // indirect

@@ -3,8 +3,11 @@ package configcheckin
 import "encoding/json"
 
 type CheckinConfig struct {
-	Enable bool   `json:"Enable"`
-	ActId  string `json:"ActId"`
+	GameName string `json:"GameName"`
+	Enable   bool   `json:"Enable"`
+	ActId    string `json:"ActId"`
+	SignUrl  string `json:"SignUrl"`
+	InfoUrl  string `json:"InfoUrl"`
 }
 type Config struct {
 	AutoHideWindow bool          `json:"AutoHideWindow"`
@@ -22,7 +25,5 @@ func (Config) NewConfig(configJSONRawData []byte) (result Config, err error) {
 
 // NewDefaultConfig creates a new Config from the default JSON data.
 func (Config) NewDefaultConfig() (result Config, err error) {
-	result = Config{}
-	err = json.Unmarshal([]byte(DefaultConfig), &result)
-	return result, err
+	return DefaultConfigStruct, nil
 }

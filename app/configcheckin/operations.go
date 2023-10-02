@@ -5,18 +5,25 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/WeeraW/auto-hoyolab-checkin/app/servicelogger"
 )
 
 var ConfigData Config
 
 func ReadConfiguration() error {
-	fmt.Println("Reading configuration...")
+	servicelogger.Info("Reading configuration...")
 	if _, err := os.Stat("config.json"); err == nil {
 	} else {
 		fmt.Println("Configuration file not found, creating new one...")
-		configMap, _ := Config{}.NewDefaultConfig()
-		jsonByte, _ := json.MarshalIndent(configMap, "", " ")
-
+		configMap, err := Config{}.NewDefaultConfig()
+		if err != nil {
+			return err
+		}
+		jsonByte, err := json.MarshalIndent(configMap, "", " ")
+		if err != nil {
+			return err
+		}
 		_ = os.WriteFile("config.json", jsonByte, 0644)
 	}
 
@@ -32,6 +39,6 @@ func ReadConfiguration() error {
 		return err
 	}
 	ConfigData = result
-	fmt.Println("Configuration loaded!")
+	servicelogger.Info("Configuration loaded!")
 	return nil
 }

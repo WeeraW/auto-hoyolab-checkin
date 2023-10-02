@@ -6,3 +6,9 @@
 -------------------
 - Rewrite the code
 - Add support for multiple Hoyolab game
+
+2023-10-01
+-------------------
+- Add support for multiple Hoyolab account
+- Extract the config to config.json
+- **Experimental:** support for start as a service

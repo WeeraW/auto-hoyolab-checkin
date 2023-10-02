@@ -1,11 +1,14 @@
 package checkinop
 
-import "github.com/brokiem/auto-hoyolab-checkin/app/configcheckin"
+import (
+	"github.com/WeeraW/auto-hoyolab-checkin/app/configcheckin"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/cookiereader"
+)
 
-func CheckinHonkaiImpact3() (message string, err error) {
+func CheckinHonkaiImpact3(cookie cookiereader.CheckInCookie) (message string, err error) {
 	if !configcheckin.ConfigData.HonkaiImpact3.Enable {
 		return "", nil
 	}
 
-	return DoCheckIn(configcheckin.ConfigData.HonkaiImpact3)
+	return DoCheckIn(cookie, configcheckin.ConfigData.HonkaiImpact3)
 }

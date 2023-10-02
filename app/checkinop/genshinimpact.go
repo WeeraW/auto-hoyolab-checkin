@@ -1,11 +1,14 @@
 package checkinop
 
-import "github.com/brokiem/auto-hoyolab-checkin/app/configcheckin"
+import (
+	"github.com/WeeraW/auto-hoyolab-checkin/app/configcheckin"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/cookiereader"
+)
 
-func CheckinGenshinImpact() (message string, err error) {
+func CheckinGenshinImpact(cookie cookiereader.CheckInCookie) (message string, err error) {
 	if !configcheckin.ConfigData.GenshinImpact.Enable {
 		return "", nil
 	}
 
-	return DoCheckIn(configcheckin.ConfigData.GenshinImpact)
+	return DoCheckIn(cookie, configcheckin.ConfigData.GenshinImpact)
 }

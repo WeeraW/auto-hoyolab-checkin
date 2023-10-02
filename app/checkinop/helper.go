@@ -10,27 +10,28 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/brokiem/auto-hoyolab-checkin/app/configcheckin"
-	"github.com/brokiem/auto-hoyolab-checkin/app/cookiereader"
-	"github.com/brokiem/auto-hoyolab-checkin/app/myconsole"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/configcheckin"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/cookiereader"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsole"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/servicelogger"
 	"github.com/zellyn/kooky"
 )
 
-func DoCheckIn(config configcheckin.CheckinConfig) (message string, err error) {
+func DoCheckIn(cookie cookiereader.CheckInCookie, config configcheckin.CheckinConfig) (message string, err error) {
 
 	if configcheckin.ConfigData.AutoHideWindow {
 		myconsole.HideConsole()
 	}
 
-	claimResult, err := GetClaimedStatus(cookiereader.HoyolabToken[0], cookiereader.HoyolabLtuid[0], configcheckin.ConfigData.GenshinImpact.ActId)
+	claimResult, err := GetClaimedStatus(&cookiereader.HoyolabCookies[0].Token, &cookiereader.HoyolabCookies[0].Ltuid, config)
 	if err != nil {
-		fmt.Println(err.Error())
+		servicelogger.Error(err.Error())
 		return "", err
 	}
 	if claimResult.Data.IsSign {
 		return "you've already checked in today~", nil
 	} else {
-		_, err = ClaimReward(cookiereader.HoyolabToken[0], cookiereader.HoyolabLtuid[0], configcheckin.ConfigData.GenshinImpact.ActId)
+		_, err = ClaimReward(&cookiereader.HoyolabCookies[0].Token, &cookiereader.HoyolabCookies[0].Ltuid, config)
 		if err != nil {
 			fmt.Println(err.Error())
 			return "", err
@@ -39,22 +40,22 @@ func DoCheckIn(config configcheckin.CheckinConfig) (message string, err error) {
 	}
 }
 
-func GetClaimedStatus(token *kooky.Cookie, ltuid *kooky.Cookie, actId string) (ClaimResult, error) {
-	fmt.Println("Checking claimed status...")
+func GetClaimedStatus(token *kooky.Cookie, ltuid *kooky.Cookie, config configcheckin.CheckinConfig) (ClaimResult, error) {
+	servicelogger.Infof("[%s] Checking claimed status...", config.GameName)
 	var err error
 	var result ClaimResult = ClaimResult{}
 
-	req, _ := http.NewRequest("GET", "https://sg-hk4e-api.hoyolab.com/event/sol/info", nil)
+	req, _ := http.NewRequest("GET", config.InfoUrl, nil)
 
 	params := url.Values{}
-	params.Add("act_id", actId)
+	params.Add("act_id", config.ActId)
 	req.URL.RawQuery = params.Encode()
 
 	req.Header.Add("Accept", "application/json, text/plain, */*")
 	req.Header.Add("Accept-Language", "en-US,en;q=0.5")
 	req.Header.Add("Origin", "https://act.hoyolab.com")
 	req.Header.Add("Connection", "keep-alive")
-	req.Header.Add("Referer", "https://act.hoyolab.com/ys/event/signin-sea-v3/index.html?act_id="+actId)
+	req.Header.Add("Referer", "https://act.hoyolab.com/ys/event/signin-sea-v3/index.html?act_id="+config.ActId)
 	req.Header.Add("Cache-Control", "'max-age=0")
 
 	req.AddCookie(&http.Cookie{
@@ -71,42 +72,46 @@ func GetClaimedStatus(token *kooky.Cookie, ltuid *kooky.Cookie, actId string) (C
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		servicelogger.Error(err.Error())
 		return ClaimResult{}, err
 	}
 
-	fmt.Println(resp.Status)
+	servicelogger.Debug(resp.Status)
 
 	bodyBytes, _ := io.ReadAll(resp.Body)
 	bodyString := string(bodyBytes)
-	fmt.Println(bodyString)
+	servicelogger.Debug(bodyString)
 
 	err = json.Unmarshal([]byte(bodyString), &result)
-	fmt.Println("--------------------------------")
 	if err != nil {
 		result.AppMessage = "Error: " + err.Error()
 		return result, err
 	}
+	if result.Retcode != 0 {
+		result.AppMessage = "Error: " + result.Message
+		return result, fmt.Errorf(result.Message)
+	}
 	return result, nil
 }
 
-func ClaimReward(token *kooky.Cookie, ltuid *kooky.Cookie, actId string) (string, error) {
+func ClaimReward(token *kooky.Cookie, ltuid *kooky.Cookie, config configcheckin.CheckinConfig) (string, error) {
+	servicelogger.Infof("[%s] Claiming reward...", config.GameName)
 	var err error
-	m := map[string]string{"act_id": actId}
+	m := map[string]string{"act_id": config.ActId}
 	read, write := io.Pipe()
 	go func() {
 		json.NewEncoder(write).Encode(m)
 		write.Close()
 	}()
 
-	req, _ := http.NewRequest("POST", "https://sg-hk4e-api.hoyolab.com/event/sol/sign", read)
+	req, _ := http.NewRequest("POST", config.SignUrl, read)
 
 	req.Header.Add("Accept", "application/json, text/plain, */*")
 	req.Header.Add("Accept-Language", "en-US,en;q=0.5")
 	req.Header.Add("Content-Type", "application/json;charset=utf-8")
 	req.Header.Add("Origin", "https://act.hoyolab.com")
 	req.Header.Add("Connection", "keep-alive")
-	req.Header.Add("Referer", "https://act.hoyolab.com/ys/event/signin-sea-v3/index.html?act_id="+actId)
+	req.Header.Add("Referer", "https://act.hoyolab.com/ys/event/signin-sea-v3/index.html?act_id="+config.ActId)
 
 	req.AddCookie(&http.Cookie{
 		Name:   token.Name,
@@ -122,22 +127,20 @@ func ClaimReward(token *kooky.Cookie, ltuid *kooky.Cookie, actId string) (string
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		servicelogger.Error(err.Error())
 		return "", err
 	}
-	fmt.Println(resp.Status)
+	servicelogger.Debug(resp.Status)
 	bodyBytes, _ := io.ReadAll(resp.Body)
 	bodyString := string(bodyBytes)
-	fmt.Println(bodyString)
-
+	servicelogger.Debug(bodyString)
 	var result map[string]interface{}
 	json.Unmarshal([]byte(bodyString), &result)
 
 	return reflect.ValueOf(result["message"]).String(), nil
 }
 
-// RandomSleepTime returns a random time.Duration between 0 and max seconds
-func RandomSleepTime(max int) time.Duration {
-	rand.Seed(time.Now().UnixNano())
-	return time.Duration(rand.Intn(max)) * time.Second
+// RandomSleepTime returns a random time.Duration between min and max seconds
+func RandomSleepTime(min int, max int) time.Duration {
+	return time.Duration(rand.Intn(max-min)+min) * time.Second
 }

@@ -1,72 +1,109 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"time"
+	"flag"
+	"log"
 
-	"github.com/brokiem/auto-hoyolab-checkin/app/checkinop"
-	"github.com/brokiem/auto-hoyolab-checkin/app/configcheckin"
-	"github.com/brokiem/auto-hoyolab-checkin/app/cookiereader"
-	"github.com/brokiem/auto-hoyolab-checkin/app/myconsole"
-	"github.com/brokiem/auto-hoyolab-checkin/icon"
-	"github.com/getlantern/systray"
-	"github.com/go-co-op/gocron"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsants"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsole"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/myservice"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/servicelogger"
+	"github.com/kardianos/service"
 	_ "github.com/zellyn/kooky/browser/chrome"
 	_ "github.com/zellyn/kooky/browser/firefox"
 	_ "github.com/zellyn/kooky/browser/opera"
 	_ "github.com/zellyn/kooky/browser/safari"
 )
 
-var cronJob *gocron.Scheduler
-
 func main() {
+	serviceFlag := flag.String("service", "", "service operation (install, uninstall, update, start, stop, restart)")
+	flag.Parse()
 
-	fmt.Println(" \nAutomatic Hoyolab Check-in (https://github.com/brokiem/auto-hoyolab-checkin) \n\n[DO NOT CLOSE THIS WINDOW]\nTo minimize or hide this window, \nclick the icon in the SYSTEM TRAY then choose \"Hide window\" button\n ")
-	systray.Run(onReady, onExit)
-}
+	options := make(service.KeyValue)
+	options["Restart"] = "on-success"
+	options["SuccessExitStatus"] = "1 2 8 SIGKILL"
 
-func onReady() {
-	systray.SetTemplateIcon(icon.Data, icon.Data)
-	systray.SetTitle("Automatic Hoyolab Check-in")
-	systray.SetTooltip("Automatic Hoyolab Check-in")
+	// Define service config.
+	svcConfig := &service.Config{
+		Name:        myconsants.AppName,
+		DisplayName: myconsants.AppName,
+		Description: "Automatic Hoyolab Check-in",
+	}
+	prg := &myservice.Program{}
+	s, err := service.New(prg, svcConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	bShow := systray.AddMenuItem("Show window", "Show console")
-	bHide := systray.AddMenuItem("Hide window", "Hide console")
-	systray.AddSeparator()
-	bExit := systray.AddMenuItem("Exit", "Exit the whole app")
-	go func() {
-		for {
-			select {
-			case <-bHide.ClickedCh:
-				myconsole.HideConsole()
-			case <-bShow.ClickedCh:
-				myconsole.ShowConsole()
-			case <-bExit.ClickedCh:
-				systray.Quit()
-			}
+	// Setup the logger.
+	errs := make(chan error, 5)
+	servicelogger.Logger, err = s.Logger(errs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	myconsole.Init()
+
+	// Handle service controls (optional).
+	if len(*serviceFlag) != 0 {
+		err := service.Control(s, *serviceFlag)
+		if err != nil {
+			log.Fatal(err)
 		}
-	}()
-
-	// init config
-	err := configcheckin.ReadConfiguration()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
 		return
 	}
 
-	err = cookiereader.ReadCookieFromBrowser()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-		return
+	// Run the service.
+	if serviceFlag == nil || *serviceFlag == "" {
+		err = s.Run()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
-	cronJob = gocron.NewScheduler(time.UTC)
-	cronJob.Every(12).Hours().Do(checkinop.RunProgram)
-	cronJob.StartAsync()
-}
 
-func onExit() {
-	fmt.Println("Exiting...")
+	if *serviceFlag == "install" {
+		err = s.Install()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if *serviceFlag == "uninstall" {
+		err = s.Uninstall()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if *serviceFlag == "update" {
+		err = s.Uninstall()
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = s.Install()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if *serviceFlag == "start" {
+		err = s.Start()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if *serviceFlag == "stop" {
+		err = s.Stop()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if *serviceFlag == "restart" {
+		err = s.Restart()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }
