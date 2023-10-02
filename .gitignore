@@ -1,2 +1,6 @@
 tmp
 ./vscode/settings.json
+bin
+cookieconfig.json
+dist
+sandbox*
