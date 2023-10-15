@@ -7,18 +7,21 @@ this software will automatically check in to the website every 4 hours (Your PC 
 ## How to use
 
 1. Download the exe first in the release section or build yourself
-2. Add the program shortcut to the auto startup program (in Windows: C:\Users\<YourUser>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\)
+2. Add the program shortcut to the auto startup program
+   **Windows**
+   `C:\Users\<YourUser>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\`
+   * You can also use the `Win+R` shortcut and type `shell:startup` to open the startup folder
 3. Run the program and done, it will automaticaly run when your pc is turned on!
 
 ## Download
 
-https://github.com/brokiem/auto-hoyolab-checkin/releases/tag/new
+https://github.com/WeeraW/auto-hoyolab-checkin/releases/tag/new
 
 ## Build
 1. Install latest golang from [here](https://go.dev/dl/)
 2. Clone this repo
 ```sh
-git clone https://github.com/brokiem/auto-hoyolab-checkin.git
+git clone https://github.com/WeeraW/auto-hoyolab-checkin.git
 ```
 3. CD to project folder
 ```sh
@@ -29,17 +32,12 @@ cd auto-hoyolab-checkin
 go mod tidy
 ```
 4. Build the executable
-Option 1: Build for your current OS
-```sh
-go build -o ./bin/hoyolab_auto_checkin.exe -ldflags="-s -w"  ./main.go
-```
-option 2: Build and hide console window (Windows only)
-```sh
-go build -o ./bin/hoyolab_auto_checkin.exe -ldflags="-s -w -H=windowsgui"  ./main.go
-```
-
-1. You will get the executables with name `hoyolab_auto_checkin.exe`
-
-## Question?
-
-Open an issue (https://github.com/brokiem/auto-hoyolab-checkin/issues)
+  * **Option 1:** Build for your current OS
+     ```sh
+     go build -o ./bin/hoyolab_auto_checkin.exe -ldflags="-s -w"  ./main.go
+     ```
+  * **Option 2:** Build without console (Windows only)
+     ```sh
+     go build -o ./bin/hoyolab_auto_checkin.exe -ldflags="-s -w -H=windowsgui"  ./main.go
+     ```
+5. You will get the executables with name `hoyolab-auto-checkin.exe`
