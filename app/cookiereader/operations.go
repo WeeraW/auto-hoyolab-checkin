@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsants"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/servicelogger"
+	"github.com/gen2brain/beeep"
 	"github.com/zellyn/kooky"
 )
 
@@ -26,6 +28,7 @@ func ReadCookie() error {
 
 func ReadCookieFromBrowser() error {
 	servicelogger.Info("Reading cookies from browser...")
+	beeep.Notify(myconsants.AppName, "Reading cookies from browser...", "")
 	cookieStores := kooky.FindAllCookieStores()
 	isFoundCredential := false
 	for _, cookieStore := range cookieStores {
@@ -46,7 +49,7 @@ func ReadCookieFromBrowser() error {
 			continue
 		}
 		if len(resultLtuid) <= 0 {
-			fmt.Println("No cookies found in", cookieStore.Browser())
+			servicelogger.Info("No cookies found in " + cookieStore.Browser())
 			continue
 		}
 		servicelogger.Info("Found " + fmt.Sprint(len(resultToken)) + " cookies")
@@ -63,10 +66,11 @@ func ReadCookieFromBrowser() error {
 		break
 	}
 	if !isFoundCredential {
-		return fmt.Errorf("account credential not found, please login to hoyolab once in Chrome/Firefox/Opera/Safari")
+		return fmt.Errorf("account credential not found, please login to hoyolab once in Chrome/Firefox/Opera/Safari or close browser and try again")
 	}
 	// write to file
 	servicelogger.Info("Writing cookies to file...")
+	beeep.Notify(myconsants.AppName, "Writing cookies to file...", "")
 	errWrite := WriteCookiesToFile()
 	if errWrite != nil {
 		return errWrite
@@ -76,6 +80,7 @@ func ReadCookieFromBrowser() error {
 
 func ReadCookiesFromFile() error {
 	servicelogger.Info("Reading cookies from file...")
+	beeep.Notify(myconsants.AppName, "Reading cookies from file...", "")
 	if _, err := os.Stat("cookieconfig.json"); err != nil {
 		return fmt.Errorf("account credential not found, please login to hoyolab once in Chrome/Firefox/Opera/Safari")
 	}
@@ -98,6 +103,7 @@ func ReadCookiesFromFile() error {
 	}
 	HoyolabCookies = result
 	servicelogger.Info("Cookies loaded!")
+	beeep.Notify(myconsants.AppName, "Cookies loaded!", "")
 	return nil
 }
 

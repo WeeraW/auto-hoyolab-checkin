@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/WeeraW/auto-hoyolab-checkin/app/cookiereader"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsants"
 	"github.com/gen2brain/beeep"
 	"github.com/getlantern/systray"
 )
@@ -15,7 +16,7 @@ func RunProgram() {
 
 	err = cookiereader.ReadCookie()
 	if err != nil {
-		beeep.Notify("Hoyolab Check-in", fmt.Sprintf("Error! %s", err.Error()), "")
+		beeep.Notify(myconsants.AppName, fmt.Sprintf("Error! %s", err.Error()), "")
 		return
 	}
 	for _, cookie := range cookiereader.HoyolabCookies {
@@ -45,7 +46,7 @@ func RunProgram() {
 		time.Sleep(RandomSleepTime(1, 5))
 	}
 	for _, message := range messages {
-		beeep.Notify("Hoyolab Check-in", message, "")
+		beeep.Notify(myconsants.AppName, message, "")
 	}
-	systray.SetTooltip(fmt.Sprintf("Automatic Hoyolab Check-in done at %s", time.Now().Format("15:04:05")))
+	systray.SetTooltip(fmt.Sprintf("%s done at %s", myconsants.AppName, time.Now().Format("15:04:05")))
 }

@@ -2,6 +2,7 @@ package myconsole
 
 import (
 	"github.com/WeeraW/auto-hoyolab-checkin/app/servicelogger"
+	"github.com/gen2brain/beeep"
 	"github.com/gonutz/w32/v2"
 )
 
@@ -18,6 +19,7 @@ func HideConsole() {
 
 func ShowConsole() {
 	if CurrentConsole == 0 {
+		beeep.Notify("Hoyolab Check-in", "No console attached.", "")
 		servicelogger.Warning("No console attached.")
 		return // no console attached
 	}
@@ -29,6 +31,7 @@ func ShowConsole() {
 
 func AttachConsole() {
 	if CurrentConsole != 0 {
+		beeep.Notify("Hoyolab Check-in", "Console already attached.", "")
 		servicelogger.Warning("Console already attached.")
 		return // already attached
 	}

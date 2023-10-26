@@ -19,7 +19,7 @@ func (p *Program) Start(s service.Service) error {
 	if service.Interactive() {
 		servicelogger.Info("Program Running in terminal.")
 		if w32.GetConsoleWindow() != 0 {
-			servicelogger.Infof("\nAutomatic Hoyolab Check-in (https://github.com/brokiem/auto-hoyolab-checkin) \n\n[DO NOT CLOSE THIS WINDOW]\nTo minimize or hide this window, \nclick the icon in the SYSTEM TRAY then choose \"Hide window\" button")
+			servicelogger.Infof("\nAutomatic Hoyolab Check-in (https://github.com/WeeraW/auto-hoyolab-checkin) \n\n[DO NOT CLOSE THIS WINDOW]\nTo minimize or hide this window, \nclick the icon in the SYSTEM TRAY then choose \"Hide window\" button")
 			servicelogger.Infof("Press Ctrl+C to exit...\n\n\n")
 		}
 	} else {

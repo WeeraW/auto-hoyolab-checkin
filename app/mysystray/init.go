@@ -7,6 +7,7 @@ import (
 
 	"github.com/WeeraW/auto-hoyolab-checkin/app/checkinop"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/configcheckin"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/cookiereader"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsants"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsole"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/servicelogger"
@@ -40,6 +41,11 @@ func onReady() {
 	bShow := systray.AddMenuItem("Show window", "Show console")
 	bHide := systray.AddMenuItem("Hide window", "Hide console")
 	systray.AddSeparator()
+	bRetry := systray.AddMenuItem("Retry now", "Retry checkin now")
+	systray.AddSeparator()
+	bLoadCookieBrowser := systray.AddMenuItem("Load cookie form browser", "Load cookie from browser")
+	bLoadCookieFile := systray.AddMenuItem("Load cookie form file", "Load cookie from file")
+	systray.AddSeparator()
 	if myconsole.CurrentConsole == 0 {
 		bHide.Disable()
 		bShow.Disable()
@@ -53,6 +59,12 @@ func onReady() {
 				myconsole.HideConsole()
 			case <-bShow.ClickedCh:
 				myconsole.ShowConsole()
+			case <-bLoadCookieBrowser.ClickedCh:
+				cookiereader.ReadCookieFromBrowser()
+			case <-bLoadCookieFile.ClickedCh:
+				cookiereader.ReadCookiesFromFile()
+			case <-bRetry.ClickedCh:
+				checkinop.RunProgram()
 			case <-bExit.ClickedCh:
 				systray.Quit()
 			}
