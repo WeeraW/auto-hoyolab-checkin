@@ -1,0 +1,40 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "go",
+			"label": "go: build package Windows",
+			"command": "build",
+			"options": {
+				"env": {
+					"LDFLAGS": "-s -w"
+				}
+			},
+			"args": [
+				"-o=${workspaceFolder}/bin/${workspaceFolderBasename}.exe",
+				"-ldflags=-s -w",
+				"${workspaceFolder}/main.go"
+			],
+			"problemMatcher": [
+				"$go"
+			],
+			"group": "build",
+			// "detail": "cd d:\\projects\\auto-hoyolab-checkin; go build ${fileDirname}"
+		},
+		{
+			"type": "go",
+			"label": "go: build package Windows no console",
+			"command": "build",
+			"args": [
+				"-o=${workspaceFolder}/bin/${workspaceFolderBasename}.exe",
+				"-ldflags=-s -w -H=windowsgui",
+				"${workspaceFolder}/main.go"
+			],
+			"problemMatcher": [
+				"$go"
+			],
+			"group": "build",
+			// "detail": "cd d:\\projects\\auto-hoyolab-checkin; go build ${fileDirname}"
+		}
+	]
+}
