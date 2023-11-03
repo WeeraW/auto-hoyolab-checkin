@@ -15,7 +15,7 @@ this software will automatically check in to the website every 4 hours (Your PC 
 
 ## Download
 
-https://github.com/WeeraW/auto-hoyolab-checkin/releases/tag/new
+https://github.com/WeeraW/auto-hoyolab-checkin/releases
 
 ## Build
 1. Install latest golang from [here](https://go.dev/dl/)
