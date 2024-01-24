@@ -4,6 +4,14 @@ Thanks to orignal [brokiem Automatic Hoyolab Check-in](https://github.com/brokie
 With this lightweight software, you don't have to worry about missing your daily check-in on the Hoyolab website because
 this software will automatically check in to the website every 4 hours (Your PC must be on and connected to internet).
 
+## Features
+* Supports multiple accounts
+* Retry when failed
+* Support games
+  * Genshin Impact
+  * Honkai Impact 3rd
+  * Honkai Star Rail
+
 ## How to use
 
 1. Download the exe first in the release section or build yourself
