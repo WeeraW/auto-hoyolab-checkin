@@ -39,6 +39,26 @@ func ReadConfiguration() error {
 		return err
 	}
 	ConfigData = result
+
+	servicelogger.LogToFile = ConfigData.LogToFile
+
 	servicelogger.Info("Configuration loaded!")
+	servicelogger.Infof("Configuration: %s", ConfigData.Inspector())
 	return nil
+}
+
+func SaveConfiguration() error {
+	servicelogger.Info("Saving configuration...")
+	jsonByte, err := json.MarshalIndent(ConfigData, "", " ")
+	if err != nil {
+		return err
+	}
+	_ = os.WriteFile("config.json", jsonByte, 0644)
+	servicelogger.Info("Configuration saved!")
+	return nil
+}
+
+func SetMessageMode(mode MessageMode) {
+	ConfigData.MessageMode = mode
+	_ = SaveConfiguration()
 }
