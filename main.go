@@ -4,15 +4,20 @@ import (
 	"flag"
 	"log"
 
+	"github.com/WeeraW/auto-hoyolab-checkin/app/filelogger"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsants"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsole"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/myservice"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/servicelogger"
+
+	// chome is not supported for now
+	// _ "github.com/browserutils/kooky/browser/chrome"
+	_ "github.com/browserutils/kooky/browser/edge"
+	_ "github.com/browserutils/kooky/browser/firefox"
+
+	_ "github.com/browserutils/kooky/browser/opera"
+	_ "github.com/browserutils/kooky/browser/safari"
 	"github.com/kardianos/service"
-	_ "github.com/zellyn/kooky/browser/chrome"
-	_ "github.com/zellyn/kooky/browser/firefox"
-	_ "github.com/zellyn/kooky/browser/opera"
-	_ "github.com/zellyn/kooky/browser/safari"
 )
 
 func main() {
@@ -38,6 +43,10 @@ func main() {
 	// Setup the logger.
 	errs := make(chan error, 5)
 	servicelogger.Logger, err = s.Logger(errs)
+	if err != nil {
+		log.Fatal(err)
+	}
+	servicelogger.LogFile, err = filelogger.NewFileLogger()
 	if err != nil {
 		log.Fatal(err)
 	}
