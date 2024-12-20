@@ -5,7 +5,7 @@ import (
 	"github.com/WeeraW/auto-hoyolab-checkin/app/cookiereader"
 )
 
-func CheckinHonkaiStarRail(cookie cookiereader.CheckInCookie) (message string, err error) {
+func CheckinHonkaiStarRail(cookie cookiereader.CheckInCookieV2) (message string, err error) {
 	if !configcheckin.ConfigData.HonkaiStarRail.Enable {
 		return "", nil
 	}
