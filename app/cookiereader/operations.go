@@ -1,17 +1,21 @@
 package cookiereader
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
+	"runtime/debug"
+	"slices"
 
 	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsants"
+	"github.com/WeeraW/auto-hoyolab-checkin/app/mynotify"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/servicelogger"
-	"github.com/gen2brain/beeep"
-	"github.com/zellyn/kooky"
+	"github.com/browserutils/kooky"
 )
 
-var HoyolabCookies = []CheckInCookie{}
+// CheckInCookieV2 is a struct to store cookies key format <browser>:<profile>
+var HoyolabCookies = map[string]CheckInCookieV2{}
 
 // ReadCookie reads cookies from browser or file
 func ReadCookie() error {
@@ -27,60 +31,83 @@ func ReadCookie() error {
 }
 
 func ReadCookieFromBrowser() error {
+	defer onReadFromBrowserPanic()
+
 	servicelogger.Info("Reading cookies from browser...")
-	beeep.Notify(myconsants.AppName, "Reading cookies from browser...", "")
-	cookieStores := kooky.FindAllCookieStores()
+	mynotify.Notify("Reading cookies from browser...")
+	cookies := kooky.TraverseCookies(context.TODO(), kooky.Valid, kooky.DomainHasSuffix(`.hoyolab.com`))
 	isFoundCredential := false
-	for _, cookieStore := range cookieStores {
-		servicelogger.Info("Reading cookies from " + cookieStore.Browser())
-		resultToken, errRead := cookieStore.ReadCookies(kooky.Valid, kooky.DomainHasSuffix(`.hoyolab.com`), kooky.Name(`ltoken`))
-		if errRead != nil {
-			servicelogger.Error(errRead.Error())
+	for cookie := range cookies {
+		if cookie == nil {
 			continue
 		}
-		if len(resultToken) <= 0 {
-			servicelogger.Info("No cookies found in " + cookieStore.Browser())
-			continue
+		servicelogger.Info("Reading cookies from " + cookie.Browser.Browser())
+		keyHoyoLab := fmt.Sprintf("%s:%s", cookie.Browser.Browser(), cookie.Browser.Profile())
+		hoyolabCookyStore, ok := HoyolabCookies[keyHoyoLab]
+		if !ok {
+			hoyolabCookyStore = CheckInCookieV2{}
 		}
-
-		resultLtuid, errRead := cookieStore.ReadCookies(kooky.Valid, kooky.DomainHasSuffix(`.hoyolab.com`), kooky.Name(`ltuid`))
-		if errRead != nil {
-			servicelogger.Error(errRead.Error())
-			continue
+		if slices.Contains(myconsants.CookieNames, cookie.Name) {
+			isFoundCredential = true
+			hoyolabCookyStore.Cookies = append(hoyolabCookyStore.Cookies, toCookieData(*cookie))
 		}
-		if len(resultLtuid) <= 0 {
-			servicelogger.Info("No cookies found in " + cookieStore.Browser())
-			continue
+		if !isFoundCredential {
+			isFoundCredential = len(hoyolabCookyStore.Cookies) > 0
 		}
-		servicelogger.Info("Found " + fmt.Sprint(len(resultToken)) + " cookies")
-
-		for index, cookie := range resultToken {
-			HoyolabCookies = append(HoyolabCookies, CheckInCookie{
-				Ltuid:  *resultLtuid[index],
-				Token:  *cookie,
-				Expire: cookie.Expires.Unix(),
-			})
-		}
-
-		isFoundCredential = true
-		break
+		hoyolabCookyStore.Expire = cookie.Expires.Unix()
+		HoyolabCookies[keyHoyoLab] = hoyolabCookyStore
 	}
 	if !isFoundCredential {
 		return fmt.Errorf("account credential not found, please login to hoyolab once in Chrome/Firefox/Opera/Safari or close browser and try again")
 	}
 	// write to file
 	servicelogger.Info("Writing cookies to file...")
-	beeep.Notify(myconsants.AppName, "Writing cookies to file...", "")
+	mynotify.Notify("Writing cookies to file...")
 	errWrite := WriteCookiesToFile()
 	if errWrite != nil {
 		return errWrite
 	}
+	servicelogger.Info("Cookies loaded!")
+	mynotify.Notify("Cookies loaded!")
 	return nil
 }
 
+func toCookieData(values kooky.Cookie) CookieData {
+	return CookieData{
+		Name:             values.Name,
+		Value:            values.Value,
+		Quoted:           values.Quoted,
+		Path:             values.Path,
+		Domain:           values.Domain,
+		Expires:          values.Expires,
+		MaxAge:           values.MaxAge,
+		Secure:           values.Secure,
+		HttpOnly:         values.HttpOnly,
+		SameSite:         int(values.SameSite),
+		Partitioned:      values.Partitioned,
+		Creation:         values.Creation,
+		Browser:          values.Browser.Browser(),
+		Profile:          values.Browser.Profile(),
+		IsDefaultProfile: values.Browser.IsDefaultProfile(),
+		FilePath:         values.Browser.FilePath(),
+	}
+}
+
+func filterHoloLabCookies(values []CheckInCookieV2) []CheckInCookieV2 {
+	var result []CheckInCookieV2 = []CheckInCookieV2{}
+	for _, cookie := range values {
+		if len(cookie.Cookies) == len(myconsants.CookieNames) {
+			result = append(result, cookie)
+		}
+	}
+	return result
+}
+
 func ReadCookiesFromFile() error {
+	defer onPanic()
+
 	servicelogger.Info("Reading cookies from file...")
-	beeep.Notify(myconsants.AppName, "Reading cookies from file...", "")
+	mynotify.Notify("Reading cookies from file...")
 	if _, err := os.Stat("cookieconfig.json"); err != nil {
 		return fmt.Errorf("account credential not found, please login to hoyolab once in Chrome/Firefox/Opera/Safari")
 	}
@@ -96,18 +123,20 @@ func ReadCookiesFromFile() error {
 	if err != nil {
 		return err
 	}
-	var result []CheckInCookie
+	var result map[string]CheckInCookieV2 = map[string]CheckInCookieV2{}
 	err = json.Unmarshal(byteValue, &result)
 	if err != nil {
 		return err
 	}
 	HoyolabCookies = result
 	servicelogger.Info("Cookies loaded!")
-	beeep.Notify(myconsants.AppName, "Cookies loaded!", "")
+	mynotify.Notify("Cookies loaded!")
 	return nil
 }
 
 func WriteCookiesToFile() error {
+	defer onPanic()
+
 	var err error
 	file, err := os.OpenFile("cookieconfig.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
@@ -123,4 +152,18 @@ func WriteCookiesToFile() error {
 		return err
 	}
 	return nil
+}
+
+func onReadFromBrowserPanic() {
+	if r := recover(); r != nil {
+		servicelogger.Error(fmt.Sprintf("Panic: on read cookie from browser %v", r))
+		servicelogger.Fatal(string(debug.Stack()))
+	}
+}
+
+func onPanic() {
+	if r := recover(); r != nil {
+		servicelogger.Error(fmt.Sprintf("Panic: %v", r))
+		servicelogger.Fatal(string(debug.Stack()))
+	}
 }
