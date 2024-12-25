@@ -12,3 +12,11 @@
 - Add support for multiple Hoyolab account
 - Extract the config to config.json
 - **Experimental:** support for start as a service
+
+2024-12-25
+-------------------
+- Bump dependencies
+- [Experimental] Add support for multiple Hoyolab account
+- [Experimental] Add support for ZZZ checkin
+- [Experimental] Add support logger to file
+- Add message mode `verbose`, `summary`, `silent`
