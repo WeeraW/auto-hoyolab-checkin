@@ -1,32 +1,30 @@
 package filelogger
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
 )
 
-const (
-	currentLogFileName = "log.txt"
-)
+var currentLogFileName = GenerateTodayLogFileName()
 
-func RotateLog() {
-	currentTime := time.Now()
-	newLogFileName := "log_" + currentTime.Format("20060102") + ".log"
+var ErrorLogFileExists = fmt.Errorf("Log file already exists")
+
+func RotateLog() error {
+	newLogFileName := GenerateTodayLogFileName()
 
 	// Close current log file
 
 	// Rename current log file
-	err := os.Rename(currentLogFileName, newLogFileName)
-	if err != nil {
-		// handle error
+	_, err := os.Lstat(newLogFileName)
+	if os.IsNotExist(err) {
+		os.Create(newLogFileName)
+		currentLogFileName = newLogFileName
+	} else {
+		return ErrorLogFileExists
 	}
-
-	// Create new log file
-	_, err = os.Create(currentLogFileName)
-	if err != nil {
-		// handle error
-	}
+	return nil
 }
 
 func NewFileLogger() (result *FileLogger, err error) {
@@ -37,4 +35,8 @@ func NewFileLogger() (result *FileLogger, err error) {
 	}
 	result.FileLogger = log.New(logFile, "", log.LstdFlags)
 	return result, nil
+}
+
+func GenerateTodayLogFileName() string {
+	return fmt.Sprintf("log_%s.log", time.Now().Format("20060102"))
 }

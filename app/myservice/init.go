@@ -3,13 +3,14 @@ package myservice
 import (
 	"time"
 
+	"fyne.io/systray"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/mysystray"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/servicelogger"
-	"github.com/getlantern/systray"
 	"github.com/gonutz/w32/v2"
 	"github.com/kardianos/service"
 )
 
+// Experimental service manager
 type Program struct {
 	exit chan struct{}
 }

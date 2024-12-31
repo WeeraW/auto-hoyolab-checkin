@@ -106,6 +106,7 @@ func onReady() {
 }
 
 func initCronJob() {
+	servicelogger.LogFile.RotateLog()
 	cronJob = gocron.NewScheduler(time.UTC)
 	cronJob.Every(8).Hours().Do(checkinop.RunProgram)
 	// rotate log file

@@ -1,10 +1,13 @@
 package filelogger
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/gen2brain/beeep"
 	"github.com/kardianos/service"
 )
 
@@ -59,22 +62,60 @@ func (l *FileLogger) Close() error {
 	return l.FileLogger.Writer().(*os.File).Close()
 }
 
+func (l *FileLogger) SetOutput(w *os.File) {
+	l.FileLogger.SetOutput(w)
+}
+
 func (l *FileLogger) RotateLog() {
 	currentTime := time.Now()
-	newLogFileName := "log_" + currentTime.Format("20060102") + ".log"
-
 	// Close current log file
 	l.Close()
+	RotateLog()
 
-	// Rename current log file
-	err := os.Rename(currentLogFileName, newLogFileName)
+	// keep only 7 days of logs
+	// delete logs older than 7 days
+	files, err := os.ReadDir(".")
 	if err != nil {
 		// handle error
+		beeep.Alert("Error", fmt.Sprintf("Error when reading directory: %s", err.Error()), "")
 	}
-
-	// Create new log file
-	_, err = os.Create(currentLogFileName)
-	if err != nil {
-		// handle error
+	// at beginning of the day
+	oldDate := currentTime.AddDate(0, 0, -7).Truncate(24 * time.Hour)
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		if file.Name() == currentLogFileName {
+			continue
+		}
+		if strings.Contains(file.Name(), "log_") {
+			fileTime, err := time.Parse("20060102", file.Name()[4:12])
+			if err != nil {
+				// handle error
+				beeep.Alert("Error", fmt.Sprintf("Error when parsing file name: %s", err.Error()), "")
+			}
+			if fileTime.Before(oldDate) {
+				err := os.Remove(file.Name())
+				if err != nil {
+					// handle error
+					beeep.Alert("Error", fmt.Sprintf("Error when deleting file: %s", err.Error()), "")
+				}
+			}
+		}
 	}
 }
+
+// VerifyLogFileAge checks if the log file is not in the same day and rotates the log file
+// func (l *FileLogger) VerifyLogFileAge() (err error) {
+// 	// Check if log file is older than 24 hours
+// 	today := time.Now().Format("20060102")
+// 	fileInfo, err := os.Stat(currentLogFileName)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	// check if log file is not in the same day
+// 	if fileInfo.ModTime().Format("20060102") != today {
+// 		l.RotateLog()
+// 	}
+// 	return nil
+// }
