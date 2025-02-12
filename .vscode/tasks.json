@@ -35,6 +35,36 @@
 			],
 			"group": "build",
 			// "detail": "cd d:\\projects\\auto-hoyolab-checkin; go build ${fileDirname}"
+		},
+		{
+			"type": "go",
+			"label": "go: build package MacOS Silicon",
+			"command": "build",
+			"args": [
+				"-o=${workspaceFolder}/bin/${workspaceFolderBasename}_darwin",
+				"-ldflags=-s -w",
+				"-tags=darwin,arm64",
+				"${workspaceFolder}/build/macos/main.go"
+			],
+			"problemMatcher": [
+				"$go"
+			],
+			"group": "build",
+		},
+		{
+			"type": "go",
+			"label": "go: build package MacOS Silicon no console",
+			"command": "build",
+			"args": [
+				"-o=${workspaceFolder}/bin/${workspaceFolderBasename}_darwin",
+				"-ldflags=-s -w",
+				"-tags=darwin,arm64",
+				"${workspaceFolder}/build/macos/main.go"
+			],
+			"problemMatcher": [
+				"$go"
+			],
+			"group": "build",
 		}
 	]
 }
