@@ -12,16 +12,15 @@ import (
 
 	"github.com/WeeraW/auto-hoyolab-checkin/app/configcheckin"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/cookiereader"
-	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsole"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/servicelogger"
 	"github.com/browserutils/kooky"
 )
 
 func DoCheckIn(cookie cookiereader.CheckInCookieV2, config configcheckin.CheckinConfig) (message string, err error) {
 
-	if configcheckin.ConfigData.AutoHideWindow {
-		myconsole.HideConsole()
-	}
+	// if configcheckin.ConfigData.AutoHideWindow {
+	// 	myconsole.HideConsole()
+	// }
 
 	claimResult, err := GetClaimedStatusV2(cookie.Cookies, config)
 	if err != nil {
@@ -89,7 +88,7 @@ func GetClaimedStatus(token *kooky.Cookie, ltuid *kooky.Cookie, config configche
 	}
 	if result.Retcode != 0 {
 		result.AppMessage = "Error: " + result.Message
-		return result, fmt.Errorf(result.Message)
+		return result, fmt.Errorf("%s", result.Message)
 	}
 	return result, nil
 }
@@ -150,7 +149,7 @@ func GetClaimedStatusV2(cookies []cookiereader.CookieData, config configcheckin.
 	}
 	if result.Retcode != 0 {
 		result.AppMessage = "Error: " + result.Message
-		return result, fmt.Errorf(result.Message)
+		return result, fmt.Errorf("%s", result.Message)
 	}
 	return result, nil
 }

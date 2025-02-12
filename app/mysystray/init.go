@@ -11,7 +11,6 @@ import (
 	"github.com/WeeraW/auto-hoyolab-checkin/app/configcheckin"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/cookiereader"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsants"
-	"github.com/WeeraW/auto-hoyolab-checkin/app/myconsole"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/mynotify"
 	"github.com/WeeraW/auto-hoyolab-checkin/app/servicelogger"
 	"github.com/WeeraW/auto-hoyolab-checkin/icon"
@@ -41,18 +40,18 @@ func onReady() {
 	systray.SetTitle(myconsants.AppName)
 	systray.SetTooltip(myconsants.AppName)
 
-	bShow := systray.AddMenuItem("Show window", "Show console")
-	bHide := systray.AddMenuItem("Hide window", "Hide console")
+	// bShow := systray.AddMenuItem("Show window", "Show console")
+	// bHide := systray.AddMenuItem("Hide window", "Hide console")
 	systray.AddSeparator()
 	bRetry := systray.AddMenuItem("Retry now", "Retry checkin now")
 	systray.AddSeparator()
 	bLoadCookieBrowser := systray.AddMenuItem("Load cookie form browser", "Load cookie from browser")
 	bLoadCookieFile := systray.AddMenuItem("Load cookie form file", "Load cookie from file")
 	systray.AddSeparator()
-	if myconsole.CurrentConsole == 0 {
-		bHide.Disable()
-		bShow.Disable()
-	}
+	// if myconsole.CurrentConsole == 0 {
+	// 	bHide.Disable()
+	// 	bShow.Disable()
+	// }
 	configMenu := systray.AddMenuItem("Configuration", "Edit configuration")
 	messageConfigMenu := configMenu.AddSubMenuItem("Message mode", "Message mode")
 	btnSetMessageToVerbose := messageConfigMenu.AddSubMenuItem("Verbose", "messages will be shown every action")
@@ -63,10 +62,10 @@ func onReady() {
 	go func() {
 		for {
 			select {
-			case <-bHide.ClickedCh:
-				myconsole.HideConsole()
-			case <-bShow.ClickedCh:
-				myconsole.ShowConsole()
+			// case <-bHide.ClickedCh:
+			// myconsole.HideConsole()
+			// case <-bShow.ClickedCh:
+			// myconsole.ShowConsole()
 			case <-bLoadCookieBrowser.ClickedCh:
 				err := cookiereader.ReadCookieFromBrowser()
 				if err != nil {

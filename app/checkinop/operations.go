@@ -1,6 +1,7 @@
 package checkinop
 
 import (
+	"errors"
 	"fmt"
 	"runtime/debug"
 	"time"
@@ -24,8 +25,7 @@ func RunProgram() {
 	messages := []Message{}
 
 	if len(cookiereader.HoyolabCookies) == 0 {
-		beeep.Notify(myconsants.AppName, "No cookie found!", "")
-		return
+		err = errors.New("no cookie found")
 	}
 	if err != nil {
 		beeep.Notify(myconsants.AppName, fmt.Sprintf("Error! %s", err.Error()), "")
