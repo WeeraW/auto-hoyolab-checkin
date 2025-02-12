@@ -5,11 +5,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch file",
+      "name": "Launch file macOS",
       "type": "go",
       "request": "launch",
       "mode": "debug",
-      "program": "${workspaceFolder}/main.go",
+      "program": "${workspaceFolder}/build/macos/main.go",
+    },
+    {
+      "name": "Launch file windows",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/build/windows/main.go",
     }
 
   ]
