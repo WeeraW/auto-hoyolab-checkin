@@ -5,3 +5,7 @@ cookieconfig.json
 dist
 sandbox*
 poc/
+build/macos/config.json
+build/macos/cookieconfig.json
+build/windows/config.json
+build/windows/cookieconfig.json
